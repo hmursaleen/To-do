@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'core/base.html' %}
 
 {% block title %}Task Details{% endblock %}
 
@@ -41,10 +41,10 @@
     </p>
 
     <div class="mt-6">
-      <a href="{% url 'task_update' task.pk %}" class="text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded">
+      <a href="{% url 'tasks:task_update' task.pk %}" class="text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded">
         Edit Task
       </a>
-      <a href="{% url 'task_list' %}" class="text-blue-500 underline ml-4">
+      <a href="{% url 'tasks:task_list' %}" class="text-blue-500 underline ml-4">
         Back to Task List
       </a>
     </div>

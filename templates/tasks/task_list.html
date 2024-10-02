@@ -12,7 +12,7 @@
           <li class="py-4">
             <div class="flex justify-between">
               <span class="text-lg">{{ task.title }}</span>
-              <a href="#" class="text-blue-500 hover:underline">View Details</a>
+              <a href="{% url 'tasks:task_detail' task.pk %}" class="text-blue-500 hover:underline">View Details</a>
             </div>
             <p class="text-gray-600">{{ task.description }}</p>
             <span class="text-gray-500 text-sm">Created on: {{ task.created_at|date:"M d, Y" }}</span>
