@@ -57,7 +57,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         
         'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Add your centralized templates directory here
-        'APP_DIRS': False,  # Enable this to allow loading templates from within apps
+        'APP_DIRS': True,  # Enable this to allow loading templates from within apps
 
         'OPTIONS': {
             'context_processors': [

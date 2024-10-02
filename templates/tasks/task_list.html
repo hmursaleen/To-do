@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Tasks{% endblock %}
+
+{% block content %}
+  <h2 class="text-2xl font-semibold mb-6">{{ title }}</h2>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    {% if tasks %}
+      <ul class="divide-y divide-gray-200">
+        {% for task in tasks %}
+          <li class="py-4">
+            <div class="flex justify-between">
+              <span class="text-lg">{{ task.title }}</span>
+              <a href="#" class="text-blue-500 hover:underline">View Details</a>
+            </div>
+            <p class="text-gray-600">{{ task.description }}</p>
+            <span class="text-gray-500 text-sm">Created on: {{ task.created_at|date:"M d, Y" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Pagination Controls -->
+      <div class="mt-6">
+        {% if is_paginated %}
+          <div class="pagination">
+            <span class="page-links">
+              {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+              {% endif %}
+
+              <span class="current-page">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <p class="text-gray-500">No tasks available.</p>
+    {% endif %}
+  </div>
+{% endblock %}
