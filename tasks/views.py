@@ -1,9 +1,11 @@
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, UpdateView
 from .models import Task
 from .forms import TaskForm
+
+
 
 
 
@@ -48,10 +50,12 @@ class TaskCreateView(CreateView): #LoginRequiredMixin
         """
         Provide additional context to the template, if needed.
         """
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Create a New Task'
-        return context
 
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Create Task'
+        context['header_text'] = 'Create Task'
+        context['button_text'] = 'Create Task'
+        return context
 
 
 
@@ -91,4 +95,44 @@ class TaskListView(ListView): #LoginRequiredMixin
         """
         context = super().get_context_data(**kwargs)
         context['title'] = 'My Task List'  # Optional: Pass additional context for the template
+        return context
+
+
+
+
+
+
+
+
+class TaskUpdateView(UpdateView): #LoginRequiredMixin, UserPassesTestMixin, 
+    """
+    View to update a task. Only the owner of the task can update it.
+    Uses LoginRequiredMixin to ensure only logged-in users can access,
+    and UserPassesTestMixin to ensure only the task owner can update.
+    """
+    model = Task
+    form_class = TaskForm
+    template_name = 'tasks/task_form.html'  # Use the same form template for creation and update
+    success_url = reverse_lazy('task_list')  # Redirect to task list on success
+
+    def form_valid(self, form):
+        """
+        Called when a valid form is submitted.
+        Optionally, add extra logic here before saving the form.
+        """
+        return super().form_valid(form)
+
+    def test_func(self):
+        """
+        Ensure that only the owner of the task can edit it.
+        """
+        task = self.get_object()
+        return task.owner == self.request.user
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Update Task'
+        context['header_text'] = 'Update Task'
+        context['button_text'] = 'Update Task'
         return context
