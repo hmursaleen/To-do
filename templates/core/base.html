@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}ToDo{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN (or your local setup) -->
+    <link href="https://cdn.jsdelivr.net/combine/npm/tailwindcss@2.2.19/dist/tailwind.min.css,npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+
+    <!-- Add jQuery and Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-500 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-white text-lg font-bold">ToDo</a>
+            <ul class="flex space-x-4">
+                {% if user.is_authenticated %}
+                    <li><a href="#" class="text-white hover:text-blue-200">My Tasks</a></li>
+                    <li><a href="#" class="text-white hover:text-blue-200">Logout</a></li>
+                {% else %}
+                    <li><a href="#" class="text-white hover:text-blue-200">Login</a></li>
+                    <li><a href="#" class="text-white hover:text-blue-200">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <main class="container mx-auto mt-8">
+        <div class="bg-white shadow-md rounded-lg p-6">
+            {% block content %}
+            <!-- The main content for each page will go here -->
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 p-4 mt-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 ToDo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Optional: Add JavaScript here if needed -->
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>
