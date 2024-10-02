@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView, UpdateView, DetailView
 from .models import Task
 from .forms import TaskForm
 
@@ -59,7 +59,6 @@ class TaskCreateView(CreateView): #LoginRequiredMixin
 
 
 
-
 '''
 get_queryset():
 
@@ -71,6 +70,34 @@ Context Data:
 
 The get_context_data method passes additional context to the template, such as the page title.
 '''
+
+
+
+
+
+
+class TaskDetailView(DetailView): #LoginRequiredMixin, UserPassesTestMixin, 
+    """
+    View to display task details.
+    Only the task's owner can view the task details.
+    """
+    model = Task
+    template_name = 'tasks/task_detail.html'
+    context_object_name = 'task'
+
+    def test_func(self):
+        """
+        Ensure that only the owner of the task can view it.
+        """
+        task = self.get_object()
+        return task.owner == self.request.user
+
+
+
+
+
+
+
 
 
 class TaskListView(ListView): #LoginRequiredMixin
