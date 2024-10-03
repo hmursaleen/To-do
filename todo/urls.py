@@ -14,10 +14,44 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+# Set up drf-yasg for automatic API documentation
+schema_view = get_schema_view(
+    openapi.Info(
+        title="ToDo API",
+        default_version='v1',
+        description="API documentation for the ToDo app",
+        terms_of_service="https://www.example.com/terms/",
+        contact=openapi.Contact(email="contact@example.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),  # Include your API app URLs
     path('task/', include('tasks.urls')),
+    #path('user/', include('users.urls')),
+    #path('notification/', include('notifications.urls')),
+    #path('core/', include('core.urls')),
+
+    # drf-yasg routes for Swagger and ReDoc
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
+'''
+drf-yasg: The get_schema_view function is used to generate API documentation. You’ll get two types of documentation:
+Swagger UI: View it at /swagger/.
+ReDoc UI: View it at /redoc/.
+API URLs: The line path('api/', include('api.urls')) includes your API routes from the api/urls.py file.
+'''
