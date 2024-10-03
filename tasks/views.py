@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView, UpdateView, DetailView
+from django.views.generic import ListView, UpdateView, DetailView, DeleteView
 from .models import Task
 from .forms import TaskForm
 
@@ -37,7 +37,7 @@ class TaskCreateView(CreateView): #LoginRequiredMixin
     model = Task
     form_class = TaskForm
     template_name = 'tasks/task_form.html'
-    success_url = reverse_lazy('task_list')  # Redirect to task list after successful creation
+    success_url = reverse_lazy('tasks:task_list')  # Redirect to task list after successful creation
 
     def form_valid(self, form):
         """
@@ -140,7 +140,7 @@ class TaskUpdateView(UpdateView): #LoginRequiredMixin, UserPassesTestMixin,
     model = Task
     form_class = TaskForm
     template_name = 'tasks/task_form.html'  # Use the same form template for creation and update
-    success_url = reverse_lazy('task_list')  # Redirect to task list on success
+    success_url = reverse_lazy('tasks:task_list')  # Redirect to task list on success
 
     def form_valid(self, form):
         """
@@ -163,3 +163,32 @@ class TaskUpdateView(UpdateView): #LoginRequiredMixin, UserPassesTestMixin,
         context['header_text'] = 'Update Task'
         context['button_text'] = 'Update Task'
         return context
+
+
+
+
+
+
+
+
+class TaskDeleteView(DeleteView): #LoginRequiredMixin, UserPassesTestMixin, 
+    """
+    View to handle task deletion.
+    Only the task's owner can delete the task.
+    """
+    model = Task
+    template_name = 'tasks/task_confirm_delete.html'
+    success_url = reverse_lazy('tasks:task_list')
+
+    def test_func(self):
+        """
+        Ensure that only the owner of the task can delete it.
+        """
+        task = self.get_object()
+        return task.owner == self.request.user
+
+
+'''
+success_url: After successful deletion, the user is redirected to the task list page (task_list), which is defined by the URL name 'task_list'.
+reverse_lazy: It is used to lazily evaluate the URL reversal. This is preferred in class-based views since the URL isn't resolved until the view is called.
+'''
