@@ -165,3 +165,9 @@ You can use the default User model from Django (django.contrib.auth.models.User)
 For now, stick to Django's default User model:
 '''
 AUTH_USER_MODEL = 'auth.User'
+
+#USE LOGIN_REDIRECT_URL
+LOGIN_REDIRECT_URL = '/home'
+
+#use logout_redirect_url
+LOGOUT_REDIRECT_URL = '/home'
