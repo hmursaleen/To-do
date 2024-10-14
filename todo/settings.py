@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tasks.apps.TasksConfig',
     'api.apps.ApiConfig',
-    'user.apps.UserConfig',
+    'users.apps.UsersConfig',
 
     'rest_framework',
-    'drf_yasg','
+    'drf_yasg',
 ]
 
 REST_FRAMEWORK = {
