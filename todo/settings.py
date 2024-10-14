@@ -166,8 +166,6 @@ For now, stick to Django's default User model:
 '''
 AUTH_USER_MODEL = 'auth.User'
 
-#USE LOGIN_REDIRECT_URL
-LOGIN_REDIRECT_URL = '/home'
 
-#use logout_redirect_url
-LOGOUT_REDIRECT_URL = '/home'
+LOGIN_REDIRECT_URL = 'tasks:task_list'  # Redirect to task list after login
+LOGOUT_REDIRECT_URL = 'users:login'     # Redirect to login after logout
