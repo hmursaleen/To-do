@@ -30,7 +30,7 @@ This method is used to pass extra context (like the page title) to the template,
 '''
 
 
-class TaskCreateView(CreateView): #LoginRequiredMixin
+class TaskCreateView(LoginRequiredMixin, CreateView): #
     """
     View to handle task creation. Requires login and uses TaskForm.
     """
@@ -76,7 +76,7 @@ The get_context_data method passes additional context to the template, such as t
 
 
 
-class TaskDetailView(DetailView): #LoginRequiredMixin, UserPassesTestMixin, 
+class TaskDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView): 
     """
     View to display task details.
     Only the task's owner can view the task details.
@@ -100,7 +100,7 @@ class TaskDetailView(DetailView): #LoginRequiredMixin, UserPassesTestMixin,
 
 
 
-class TaskListView(ListView): #LoginRequiredMixin
+class TaskListView(LoginRequiredMixin, ListView): #
     """
     View to list all tasks for the currently logged-in user.
     Uses LoginRequiredMixin to restrict access to authenticated users only.
@@ -131,7 +131,7 @@ class TaskListView(ListView): #LoginRequiredMixin
 
 
 
-class TaskUpdateView(UpdateView): #LoginRequiredMixin, UserPassesTestMixin, 
+class TaskUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView): # 
     """
     View to update a task. Only the owner of the task can update it.
     Uses LoginRequiredMixin to ensure only logged-in users can access,
@@ -171,7 +171,7 @@ class TaskUpdateView(UpdateView): #LoginRequiredMixin, UserPassesTestMixin,
 
 
 
-class TaskDeleteView(DeleteView): #LoginRequiredMixin, UserPassesTestMixin, 
+class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView): #
     """
     View to handle task deletion.
     Only the task's owner can delete the task.
