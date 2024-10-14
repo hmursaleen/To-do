@@ -42,7 +42,22 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'drf_yasg','
+    'corsheaders',
+    
 ]
+
+'''
+    CORS Headers: If your API will be consumed by external frontend applications (e.g., React or Vue.js), consider installing and configuring django-cors-headers to allow cross-origin resource sharing:
+'''
+'''
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Example for React app
+    "http://localhost:8000",  # Example for Vue app
+    "http://yourdomain.com",  # Add your production domain here
+]
+'''
+## Allow all domains to make requests to your API (adjust as necessary)
+CORS_ALLOW_ALL_ORIGINS = True #
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
@@ -73,6 +88,14 @@ REST_FRAMEWORK = {
 }
 
 
+'''
+DEFAULT_RENDERER_CLASSES: Limits the responses to JSON (though you can add other formats like BrowsableAPIRenderer).
+DEFAULT_PARSER_CLASSES: Handles incoming JSON data.
+DEFAULT_AUTHENTICATION_CLASSES: Sets the default authentication method (session-based for now).
+DEFAULT_PERMISSION_CLASSES: Enforces IsAuthenticated globally to restrict access to authenticated users (you can override it on individual views).
+Pagination: The PageNumberPagination class is set for paginating API results with 10 items per page.
+'''
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,6 +104,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'todo.urls'
