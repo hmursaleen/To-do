@@ -1,6 +1,8 @@
 from django import forms
 from .models import Task
 from django.utils import timezone
+#from .models import Category
+
 
 
 
@@ -29,7 +31,7 @@ class TaskForm(forms.ModelForm):
     
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'priority', 'is_completed']
+        fields = ['title', 'description', 'due_date', 'priority', 'is_completed',]
         widgets = {
             'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'rows': 4}),
@@ -40,10 +42,12 @@ class TaskForm(forms.ModelForm):
             'due_date': 'Due Date',
             'priority': 'Task Priority',
             'is_completed': 'Mark as Completed',
+            #'category': 'Task Category',
         }
         help_texts = {
             'due_date': 'Set a deadline for this task (optional).',
             'priority': 'Select the importance level of the task.',
+            #'category': 'Select the category of the task.',
         }
 
     def clean_title(self):
@@ -63,3 +67,14 @@ class TaskForm(forms.ModelForm):
         if due_date and due_date < timezone.now():
             raise forms.ValidationError("The due date cannot be in the past.")
         return due_date
+    
+    '''
+    def clean_category(self):
+        """
+        Ensure that the category is not empty.
+        """
+        category = self.cleaned_data.get('category')
+        if not category:
+            raise forms.ValidationError("The category cannot be empty.")
+        return category
+    '''

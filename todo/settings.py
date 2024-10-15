@@ -39,9 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tasks.apps.TasksConfig',
     'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
 
     'rest_framework',
-    'drf_yasg','
+    'drf_yasg',
     'corsheaders',
     
 ]
@@ -58,6 +59,27 @@ CORS_ALLOWED_ORIGINS = [
 '''
 ## Allow all domains to make requests to your API (adjust as necessary)
 CORS_ALLOW_ALL_ORIGINS = True #
+
+
+# Celery configuration
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis broker URL
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Redis result backend
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+
+# Celery Beat for periodic tasks
+CELERY_BEAT_SCHEDULE = {
+    'check_deadline_tasks': {
+        'task': 'tasks.tasks.check_deadlines',
+        'schedule': 3600.0,  # Run every hour
+    },
+}
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [

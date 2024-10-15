@@ -8,3 +8,16 @@ migrations
 *.pyc
 db.sqlite3
 staticfiles/
+*.bak
+*.dat
+*.dir
+*.log
+*.pid
+*.lock
+*.run
+*.tmp
+*.cache
+*.session
+*.pid.lock
+*.pid.lock
+*.pid.lock
