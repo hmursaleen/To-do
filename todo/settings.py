@@ -203,3 +203,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+'''
+You can use the default User model from Django (django.contrib.auth.models.User) if no customization is needed. If you want to extend the User model in the future (e.g., for profiles or custom fields), plan to use a Custom User Model.
+
+For now, stick to Django's default User model:
+'''
+AUTH_USER_MODEL = 'auth.User'
+
+
+LOGIN_REDIRECT_URL = 'tasks:task_list'  # Redirect to task list after login
+LOGOUT_REDIRECT_URL = 'users:login'     # Redirect to login after logout

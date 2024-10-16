@@ -24,10 +24,13 @@
             <ul class="flex space-x-4">
                 {% if user.is_authenticated %}
                     <li><a href="#" class="text-white hover:text-blue-200">My Tasks</a></li>
-                    <li><a href="#" class="text-white hover:text-blue-200">Logout</a></li>
+                    <li><a href="{% url 'users:logout' %}" class="text-red-500 hover:underline">Logout</a>
+                    </li>
                 {% else %}
-                    <li><a href="#" class="text-white hover:text-blue-200">Login</a></li>
-                    <li><a href="#" class="text-white hover:text-blue-200">Sign Up</a></li>
+                    <li><a href="{% url 'users:login' %}" class="text-blue-500 hover:underline">Login</a>
+                    </li>
+                    <li><a href="{% url 'users:signup' %}" class="text-blue-500 hover:underline">Sign Up</a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
