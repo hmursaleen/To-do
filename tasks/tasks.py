@@ -1,28 +1,25 @@
+# tasks/tasks.py
 from celery import shared_task
 from django.utils import timezone
-from .models import Task
+from datetime import timedelta
+from tasks.models import Task
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
 
-'''
 @shared_task
-def check_deadlines():
-    """
-    Task to check for approaching task deadlines and notify users.
-    """
-    now = timezone.now()
-    tasks = Task.objects.filter(due_date__lte=now + timezone.timedelta(hours=24), is_completed=False)
+def check_upcoming_deadlines():
+    # Define what is considered "upcoming" (e.g., tasks due in the next 24 hours)
+    upcoming_time = timezone.now() + timedelta(hours=24)
     
-    for task in tasks:
-        # Notify the user, e.g., by sending an email or in-app notification.
-        print(f"Notifying user {task.owner.email} about the approaching deadline for task: {task.title}")
-'''
+    # Get tasks with a due date within the next 24 hours and are not completed
+    upcoming_tasks = Task.objects.filter(due_date__lte=upcoming_time, is_completed=False)
 
-
-
-
-
-from time import sleep
-
-@shared_task
-def test_task():
-    sleep(5)
-    return 'Task completed'
+    for task in upcoming_tasks:
+        # Notify the owner of the task via email
+        send_mail(
+            'Task Deadline Approaching',
+            f'The deadline for your task "{task.title}" is approaching.',
+            'habibulmursaleen@gmail.com',  # Replace with your sender email
+            [task.owner.email],
+            fail_silently=False,
+        )

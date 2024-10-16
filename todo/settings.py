@@ -74,7 +74,7 @@ CELERY_TIMEZONE = 'UTC'
 # Celery Beat for periodic tasks
 CELERY_BEAT_SCHEDULE = {
     'check_deadline_tasks': {
-        'task': 'tasks.tasks.check_deadlines',
+        'task': 'tasks.tasks.check_upcoming_deadlines',
         'schedule': 3600.0,  # Run every hour
     },
 }
