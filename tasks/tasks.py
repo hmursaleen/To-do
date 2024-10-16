@@ -1,25 +1,32 @@
-# tasks/tasks.py
-from celery import shared_task
+import logging
+from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
 from tasks.models import Task
-from django.core.mail import send_mail
-from django.contrib.auth.models import User
+from celery import shared_task
+
+
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def check_upcoming_deadlines():
-    # Define what is considered "upcoming" (e.g., tasks due in the next 24 hours)
-    upcoming_time = timezone.now() + timedelta(hours=24)
-    
-    # Get tasks with a due date within the next 24 hours and are not completed
-    upcoming_tasks = Task.objects.filter(due_date__lte=upcoming_time, is_completed=False)
+    now = timezone.now()
+    upcoming_deadline = now + timedelta(hours=24)
 
-    for task in upcoming_tasks:
-        # Notify the owner of the task via email
-        send_mail(
-            'Task Deadline Approaching',
-            f'The deadline for your task "{task.title}" is approaching.',
-            'habibulmursaleen@gmail.com',  # Replace with your sender email
-            [task.owner.email],
-            fail_silently=False,
-        )
+    tasks_due_soon = Task.objects.filter(due_date__range=(now, upcoming_deadline), is_completed=False)
+    
+    logger.info(f"Checking deadlines for {tasks_due_soon.count()} tasks")
+
+    for task in tasks_due_soon:
+        try:
+            send_mail(
+                subject=f"Task Deadline Approaching: {task.title}",
+                message=f"Your task '{task.title}' is due on {task.due_date}.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[task.owner.email],
+            )
+            logger.info(f"Email sent to {task.owner.email} for task {task.title}")
+        except Exception as e:
+            logger.error(f"Failed to send email to {task.owner.email}: {e}")

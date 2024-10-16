@@ -68,7 +68,7 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Redis result backend
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = 'Asia/Dhaka'
 
 
 # Celery Beat for periodic tasks
@@ -180,6 +180,15 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'habibulmursaleen@gmail.com'
+EMAIL_HOST_PASSWORD = 'qfmw txsw dtec ovmq'
+DEFAULT_FROM_EMAIL = 'habibulmursaleen@gmail.com'
 
 
 # Internationalization
