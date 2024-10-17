@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'tasks.apps.TasksConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
+    'notifications.apps.NotificationsConfig',
 
     'rest_framework',
     'drf_yasg',
     'corsheaders',
+    'channels',
     
 ]
 
@@ -75,7 +77,17 @@ CELERY_TIMEZONE = 'Asia/Dhaka'
 CELERY_BEAT_SCHEDULE = {
     'check_deadline_tasks': {
         'task': 'tasks.tasks.check_upcoming_deadlines',
-        'schedule': 3600.0,  # Run every hour
+        'schedule': 180.0,  # Run every hour
+    },
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # or your Redis host and port
+        },
     },
 }
 
@@ -150,6 +162,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'todo.wsgi.application'
+
+ASGI_APPLICATION = 'todo.asgi.application'
+
 
 
 # Database

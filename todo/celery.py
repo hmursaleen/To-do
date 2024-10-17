@@ -17,7 +17,7 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'check_deadline_tasks': {
         'task': 'tasks.tasks.check_upcoming_deadlines',
-        'schedule': 3600.0,  # Run every hour
+        'schedule': 180.0,  # Run every hour
     },
 }
 
