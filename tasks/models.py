@@ -2,21 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-
-'''
-class Category(models.Model):
-    """
-    Model representing task categories.
-    """
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-'''
-
-
-
-
 class Task(models.Model):
     """
     Model representing a task in the to-do list.
@@ -28,6 +13,13 @@ class Task(models.Model):
         ('L', 'Low'),
     ]
 
+    CATEGORY_CHOICES = [
+        ('Work', 'Work'),
+        ('Home', 'Home'),
+        ('Personal', 'Personal'),
+        ('Other', 'Other'),
+    ]
+
     title = models.CharField(max_length=255)  # Title of the task
     description = models.TextField(blank=True, help_text="Optional description of the task")  # Detailed task description
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")  # Task owner (user)
@@ -36,10 +28,10 @@ class Task(models.Model):
     due_date = models.DateTimeField(null=True, blank=True)  # Optional due date for the task
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')  # Task priority
     is_completed = models.BooleanField(default=False)  # Completion status of the task
-    #category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks")
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)  # Task category
 
     class Meta:
-        ordering = ['due_date', 'priority', 'created_at']  # Default ordering of tasks
+        ordering = ['-created_at', 'due_date', 'priority', ]  # Default ordering of tasks
         verbose_name = 'Task'
         verbose_name_plural = 'Tasks'
 
