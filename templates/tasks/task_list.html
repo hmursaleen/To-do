@@ -7,63 +7,109 @@
 
   <div class="container mx-auto">
     <div class="flex">
-        <!-- Sidebar for Category Filters -->
-        <div class="w-1/4 bg-gray-100 p-4">
-            <h3 class="text-lg font-bold mb-4">Categories</h3>
-            <ul>
-                <!-- Link to view all tasks (no category filter) -->
-                <li class="{% if not selected_category %}font-bold{% endif %}">
-                    <a href="{% url 'tasks:task-list' %}">All Tasks</a>
-                </li>
+      <!-- Sidebar for Filters -->
+      <div class="w-1/4 bg-gray-100 p-4">
+        <h3 class="text-lg font-bold mb-4">Filters</h3>
+        <form method="get">
+          <!-- Category Filter -->
+          <div class="mb-4">
+            <label for="category" class="block font-medium">Category:</label>
+            <select name="category" id="category" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              {% for key, value in categories %}
+                  <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ value }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-                <!-- Loop through categories defined in the Task model -->
-                {% for value, display in categories %}
-                <li class="{% if value == selected_category %}font-bold{% endif %}">
-                    <a href="{% url 'tasks:task-list' %}?category={{ value }}">{{ display }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+          <!-- Priority Filter -->
+          <div class="mb-4">
+            <label for="priority" class="block font-medium">Priority:</label>
+            <select name="priority" id="priority" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              <option value="H" {% if selected_priority == 'H' %}selected{% endif %}>High</option>
+              <option value="M" {% if selected_priority == 'M' %}selected{% endif %}>Medium</option>
+              <option value="L" {% if selected_priority == 'L' %}selected{% endif %}>Low</option>
+            </select>
+          </div>
 
-        <!-- Task List Content -->
-        <div class="w-3/4 p-4">
-            {% if tasks %}
-                <ul>
-                    {% for task in tasks %}
-                        <li class="mb-4">
-                            <h4 class="text-lg font-bold">{{ task.title }}</h4>
-                            <p>{{ task.description }}</p>
-                            <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
-                            <p><strong>Due:</strong> {{ task.due_date }}</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No tasks available for this category.</p>
-            {% endif %}
+          <!-- Completion Status Filter -->
+          <div class="mb-4">
+            <label for="is_completed" class="block font-medium">Completion Status:</label>
+            <select name="is_completed" id="is_completed" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              <option value="completed" {% if selected_is_completed == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="not_completed" {% if selected_is_completed == 'not_completed' %}selected{% endif %}>Not Completed</option>
+            </select>
+          </div>
 
-            <!-- Pagination (if needed) -->
-            {% if is_paginated %}
-                <div class="pagination">
-                    <span class="step-links">
-                        {% if page_obj.has_previous %}
-                            <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page=1">&laquo; first</a>
-                            <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.previous_page_number }}">previous</a>
-                        {% endif %}
+          <!-- Deadline Sorting -->
+          <div class="mb-6">
+            <label for="deadline_order" class="block font-medium">Sort by Deadline:</label>
+            <select name="deadline_order" id="deadline_order" class="w-full p-2 border rounded">
+              <option value="asc" {% if selected_deadline_order == 'asc' %}selected{% endif %}>Soonest to Latest</option>
+              <option value="desc" {% if selected_deadline_order == 'desc' %}selected{% endif %}>Latest to Soonest</option>
+            </select>
+          </div>
 
-                        <span class="current">
-                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                        </span>
+          <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded-md">Apply Filters</button>
+        </form>
+      </div>
 
-                        {% if page_obj.has_next %}
-                            <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.next_page_number }}">next</a>
-                            <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            {% endif %}
-        </div>
+      <!-- Main Task List Content -->
+      <div class="w-3/4 p-4">
+        <!-- Task List Display -->
+        {% if tasks %}
+          <ul>
+            {% for task in tasks %}
+              <li class="mb-4 border-b pb-2">
+                <h4 class="text-lg font-bold">{{ task.title }}</h4>
+                <p>{{ task.description }}</p>
+                <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
+                <p><strong>Due:</strong> {{ task.due_date }}</p>
+                <p><strong>Status:</strong> {% if task.is_completed %}Completed{% else %}Not Completed{% endif %}</p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No tasks available for the selected filters.</p>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+          <div class="pagination">
+            <span class="step-links">
+              {% if page_obj.has_previous %}
+                <a href="?{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}
+                          {% if request.GET.is_completed %}is_completed={{ request.GET.is_completed }}&{% endif %}
+                          {% if request.GET.deadline_order %}deadline_order={{ request.GET.deadline_order }}&{% endif %}
+                          page=1">&laquo; First</a>
+
+                <a href="?{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}
+                          {% if request.GET.is_completed %}is_completed={{ request.GET.is_completed }}&{% endif %}
+                          {% if request.GET.deadline_order %}deadline_order={{ request.GET.deadline_order }}&{% endif %}
+                          page={{ page_obj.previous_page_number }}">Previous</a>
+              {% endif %}
+
+              <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+
+              {% if page_obj.has_next %}
+                <a href="?{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}
+                          {% if request.GET.is_completed %}is_completed={{ request.GET.is_completed }}&{% endif %}
+                          {% if request.GET.deadline_order %}deadline_order={{ request.GET.deadline_order }}&{% endif %}
+                          page={{ page_obj.next_page_number }}">Next</a>
+
+                <a href="?{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}
+                          {% if request.GET.is_completed %}is_completed={{ request.GET.is_completed }}&{% endif %}
+                          {% if request.GET.deadline_order %}deadline_order={{ request.GET.deadline_order }}&{% endif %}
+                          page={{ page_obj.paginator.num_pages }}">&raquo; Last</a>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      </div>
     </div>
-</div>
-
+  </div>
 {% endblock %}
