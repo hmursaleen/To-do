@@ -47,6 +47,58 @@
         <!-- Notification container for real-time notifications -->
         <div id="notification-container" class="notification-container"></div>
 
+        <script>
+            const userId = "{{ request.user.id }}";  // Ensure user ID is dynamically passed
+            if (userId) {
+                // Create WebSocket URL (handles both ws:// and wss://)
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const wsUrl = `${wsProtocol}${window.location.host}/ws/notifications/deadlines/`;
+                
+                // Create WebSocket connection
+                const notificationSocket = new WebSocket(wsUrl);
+        
+                // WebSocket connection opened
+                notificationSocket.onopen = function(event) {
+                    console.log('WebSocket connection established.');
+                };
+        
+                // WebSocket message received
+                notificationSocket.onmessage = function(event) {
+                    try {
+                        // Parse the received data
+                        const data = JSON.parse(event.data);
+                        
+                        // Check if 'notification' exists in the data
+                        if (data.notification) {
+                            // Display the notification message in a window alert
+                            alert(`Notification: ${data.notification}`);
+                        } else {
+                            console.error('Invalid notification format:', data);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
+        
+                // WebSocket error handling
+                notificationSocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+        
+                // WebSocket connection closed
+                notificationSocket.onclose = function(event) {
+                    if (event.wasClean) {
+                        console.log('WebSocket connection closed cleanly.');
+                    } else {
+                        console.error('WebSocket connection closed unexpectedly.');
+                    }
+                };
+        
+                // Optional: Logic to auto-reconnect if the WebSocket connection is lost
+                // This can be added later if needed.
+            }
+        </script>
+        
     </main>
 
     <!-- Footer -->
@@ -55,55 +107,6 @@
             <p>&copy; 2024 ToDo. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- JavaScript code for WebSocket -->
-    <script>
-        // Check if the user is authenticated and has a valid ID
-        const userId = "{{ request.user.id }}";  // Ensure user ID is dynamically passed
-        if (userId) {
-            // Create WebSocket URL
-            const wsUrl = `ws://${window.location.host}/ws/notifications/`;
-
-            // Create WebSocket connection
-            const notificationSocket = new WebSocket(wsUrl);
-
-            // Event listener for WebSocket connection opening
-            notificationSocket.onopen = function(event) {
-                console.log('WebSocket connection established.');
-            };
-
-            // Event listener for WebSocket receiving a message
-            notificationSocket.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                const message = data.message;  // The actual message content from the server
-
-                // Display notification banner
-                const notificationBanner = document.createElement('div');
-                notificationBanner.classList.add('notification-banner');
-                notificationBanner.innerHTML = `<p>${message}</p>`;
-
-                // Append the notification to the container
-                document.getElementById('notification-container').appendChild(notificationBanner);
-
-                // Auto-hide the banner after 5 seconds
-                setTimeout(() => {
-                    notificationBanner.remove();
-                }, 5000);
-            };
-
-            // Event listener for WebSocket errors
-            notificationSocket.onerror = function(error) {
-                console.error('WebSocket error:', error);
-            };
-
-            // Event listener for WebSocket connection closing
-            notificationSocket.onclose = function(event) {
-                console.log('WebSocket connection closed.');
-            };
-
-            // Optionally, add logic to auto-reconnect if the connection is lost
-        }
-    </script>
 
     <style>
         /* Style for the notification container and banner */

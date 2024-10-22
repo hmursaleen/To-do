@@ -5,8 +5,8 @@ from datetime import timedelta
 from django.conf import settings
 from tasks.models import Task
 from celery import shared_task
-from channels.layers import get_channel_layer  # Import the Channels layer
-from asgiref.sync import async_to_sync  # Needed to send async notifications in a sync context
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def check_upcoming_deadlines():
     tasks_due_soon = Task.objects.filter(due_date__range=(now, upcoming_deadline), is_completed=False)
     
     logger.info(f"Checking deadlines for {tasks_due_soon.count()} tasks")
-    
+
     channel_layer = get_channel_layer()
 
     for task in tasks_due_soon:
@@ -31,14 +31,19 @@ def check_upcoming_deadlines():
                 recipient_list=[task.owner.email],
             )
             logger.info(f"Email sent to {task.owner.email} for task {task.title}")
+
+            # Send WebSocket notification
+            notification_message = f"Task '{task.title}' is approaching its deadline on {task.due_date}."
             
-            # Send real-time WebSocket notification
+            logger.info(f"WebSocket notification prepared for user {task.owner.id} for task {task.title}")
             async_to_sync(channel_layer.group_send)(
-                f"user_{task.owner.id}",  # Send to a WebSocket group for this user
+                f"user_{task.owner.id}_notifications",  # Send to the user group
                 {
-                    "type": "deadline.notification",  # Custom event name
-                    "message": f"Your task '{task.title}' is due in less than 24 hours!"
+                    'type': 'send_deadline_notification',
+                    'notification': notification_message
                 }
             )
+            logger.info(f"WebSocket notification dispatched to group user_{task.owner.id}_notifications")
+
         except Exception as e:
             logger.error(f"Failed to send notification to {task.owner.email}: {e}")

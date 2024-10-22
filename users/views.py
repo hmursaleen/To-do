@@ -40,7 +40,7 @@ class SignupView(CreateView):
     """
     form_class = CustomUserCreationForm
     template_name = 'users/signup.html'
-    success_url = reverse_lazy('tasks:task_list')  # Redirect to task list after successful signup
+    success_url = reverse_lazy('tasks:task-list')  # Redirect to task list after successful signup
 
     def form_valid(self, form):
         response = super().form_valid(form)

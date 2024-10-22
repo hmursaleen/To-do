@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'notifications.apps.NotificationsConfig',
+    'core.apps.CoreConfig',
 
     'rest_framework',
     'drf_yasg',
@@ -167,6 +168,7 @@ ASGI_APPLICATION = 'todo.asgi.application'
 
 
 
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -236,5 +238,5 @@ For now, stick to Django's default User model:
 AUTH_USER_MODEL = 'auth.User'
 
 
-LOGIN_REDIRECT_URL = 'tasks:task_list'  # Redirect to task list after login
+LOGIN_REDIRECT_URL = 'tasks:task-list'  # Redirect to task list after login
 LOGOUT_REDIRECT_URL = 'users:login'     # Redirect to login after logout

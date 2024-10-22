@@ -37,7 +37,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView): #
     model = Task
     form_class = TaskForm
     template_name = 'tasks/task_form.html'
-    success_url = reverse_lazy('tasks:task_list')  # Redirect to task list after successful creation
+    success_url = reverse_lazy('tasks:task-list')  # Redirect to task list after successful creation
 
     def form_valid(self, form):
         """
@@ -99,30 +99,36 @@ class TaskDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 
-
-class TaskListView(LoginRequiredMixin, ListView): #
-    """
-    View to list all tasks for the currently logged-in user.
-    Uses LoginRequiredMixin to restrict access to authenticated users only.
-    """
+class TaskListView(LoginRequiredMixin, ListView):
     model = Task
-    template_name = 'tasks/task_list.html'  # Specify the template to render
-    context_object_name = 'tasks'  # Name of the context variable to use in the template
-    paginate_by = 10  # Optional: To paginate tasks, adjust the number as needed
+    template_name = 'tasks/task_list.html'
+    context_object_name = 'tasks'
+    paginate_by = 10  # Optional: Pagination
 
     def get_queryset(self):
-        """
-        Restrict the tasks to the logged-in user's tasks only.
-        """
-        return Task.objects.filter(owner=self.request.user).order_by('-created_at')
+        # Get tasks for the logged-in user
+        queryset = Task.objects.filter(owner=self.request.user)
+        
+        # Get the category from the URL query parameter
+        category = self.request.GET.get('category')
+
+        if category:
+            # Filter tasks by the selected category
+            queryset = queryset.filter(category=category)
+
+        return queryset.order_by('-created_at', 'due_date', 'priority', )  # Apply ordering
 
     def get_context_data(self, **kwargs):
-        """
-        Add additional context data if needed, such as custom headers or metadata.
-        """
         context = super().get_context_data(**kwargs)
-        context['title'] = 'My Task List'  # Optional: Pass additional context for the template
+        
+        # Add the available categories to the context
+        context['categories'] = Task.CATEGORY_CHOICES
+
+        # Add the selected category (if any) to highlight in the template
+        context['selected_category'] = self.request.GET.get('category', '')
+        
         return context
+
 
 
 
@@ -140,7 +146,7 @@ class TaskUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView): #
     model = Task
     form_class = TaskForm
     template_name = 'tasks/task_form.html'  # Use the same form template for creation and update
-    success_url = reverse_lazy('tasks:task_list')  # Redirect to task list on success
+    success_url = reverse_lazy('tasks:task-list')  # Redirect to task list on success
 
     def form_valid(self, form):
         """
@@ -178,7 +184,7 @@ class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView): #
     """
     model = Task
     template_name = 'tasks/task_confirm_delete.html'
-    success_url = reverse_lazy('tasks:task_list')
+    success_url = reverse_lazy('tasks:task-list')
 
     def test_func(self):
         """

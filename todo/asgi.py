@@ -1,16 +1,15 @@
+# todo/asgi.py
 import os
-from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
+from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
-from django.urls import path
-import notifications.routing
+import notifications.routing  # Import WebSocket routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'todo.settings')
 
-# Import your WebSocket consumers here when they are created
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
+    "http": get_asgi_application(),  # Handle HTTP requests
+    "websocket": AuthMiddlewareStack(  # Handle WebSocket requests
         URLRouter(
             notifications.routing.websocket_urlpatterns
         )

@@ -21,6 +21,8 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.conf import settings
+from django.conf.urls.static import static
 
 # Set up drf-yasg for automatic API documentation
 schema_view = get_schema_view(
@@ -38,16 +40,16 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),  # Include your API app URLs
+    #path('api/', include('api.urls')),  # Include your API app URLs
     path('task/', include('tasks.urls')),
     path('user/', include('users.urls')),
-    #path('notification/', include('notifications.urls')),
-    #path('core/', include('core.urls')),
+    path('notifications/', include('notifications.urls')),
+    path('core/', include('core.urls')),
 
     # drf-yasg routes for Swagger and ReDoc
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 '''
 drf-yasg: The get_schema_view function is used to generate API documentation. You’ll get two types of documentation:
