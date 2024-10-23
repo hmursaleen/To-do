@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'notifications.apps.NotificationsConfig',
+    'search.apps.SearchConfig',
 
     'rest_framework',
     'drf_yasg',
