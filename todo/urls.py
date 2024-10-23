@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/', include('api.urls')),  # Include your API app URLs
     path('task/', include('tasks.urls')),
     path('user/', include('users.urls')),
+    path('search/', include('search.urls')),
     #path('notification/', include('notifications.urls')),
     #path('core/', include('core.urls')),
 

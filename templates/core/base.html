@@ -24,20 +24,6 @@
             <ul class="flex space-x-4">
                 {% if user.is_authenticated %}
                     <li><a href="#" class="text-white hover:text-blue-200">My Tasks</a></li>
-
-                    <li>
-                        <form method="get" action="#" class="flex">
-                            <input
-                                type="text"
-                                name="query"
-                                placeholder="Search tasks..."
-                                class="p-2 border border-blue-500 rounded-md"
-                                value="{{ request.GET.query|default:'' }}"
-                            />
-                        </form>
-                    </li>
-
-
                     <li><a href="{% url 'users:logout' %}" class="text-red-500 hover:underline">Logout</a>
                     </li>
                 {% else %}
@@ -119,6 +105,7 @@
         }
     </script>
 
+   
     <style>
         /* Style for the notification container and banner */
         .notification-container {
