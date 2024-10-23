@@ -1,0 +1,95 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Tasks{% endblock %}
+
+{% block content %}
+  <h2 class="text-2xl font-semibold mb-6">{{ title }}</h2>
+
+  <div class="container mx-auto">
+    <div class="flex">
+      <!-- Sidebar for Filters -->
+      <div class="w-1/4 bg-gray-100 p-4">
+        <h3 class="text-lg font-bold mb-4">Filters</h3>
+        <form method="get">
+          <!-- Category Filter -->
+          <div class="mb-4">
+            <label for="category" class="block font-medium">Category:</label>
+            <select name="category" id="category" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              {% for key, value in categories %}
+                  <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Other filters here -->
+
+          <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded-md">Apply Filters</button>
+        </form>
+      </div>
+
+      <!-- Main Task List Content -->
+      <div class="w-3/4 p-4">
+        <!-- Search Bar -->
+        <input type="text" id="search-input" name="query" placeholder="Search tasks..." class="w-full p-2 border rounded mb-4">
+
+        <!-- Task List Display -->
+        <div id="task-list-container">
+          {% for task in tasks %}
+              <div class="task-item mb-4 border-b pb-2">
+                  <h4 class="text-lg font-bold">{{ task.title }}</h4>
+                  <p>{{ task.description }}</p>
+                  <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
+                  <p><strong>Due:</strong> {{ task.due_date }}</p>
+                  <p><strong>Status:</strong> {% if task.is_completed %}Completed{% else %}Not Completed{% endif %}</p>
+              </div>
+          {% empty %}
+              <p>No tasks available for the selected filters.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add the JavaScript for dynamic search -->
+  <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          const searchInput = document.querySelector('#search-input');
+          const taskListContainer = document.querySelector('#task-list-container');
+
+          searchInput.addEventListener('input', function (event) {
+              const query = event.target.value;
+              const currentUrl = window.location.href;
+              const searchUrl = new URL('/search/', window.location.origin);
+              const params = new URLSearchParams(window.location.search);
+
+              // Preserve existing query parameters (like filters)
+              params.set('query', query);
+              searchUrl.search = params.toString();
+
+              fetch(searchUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      taskListContainer.innerHTML = '';
+
+                      if (data.tasks.length > 0) {
+                          data.tasks.forEach(task => {
+                              const taskHtml = `
+                                  <div class="task-item">
+                                      <h4>${task.title}</h4>
+                                      <p>${task.description}</p>
+                                      <p>Category: ${task.category}</p>
+                                  </div>
+                              `;
+                              taskListContainer.innerHTML += taskHtml;
+                          });
+                      } else {
+                          taskListContainer.innerHTML = '<p>No tasks found.</p>';
+                      }
+                  })
+                  .catch(error => console.error('Error:', error));
+          });
+      });
+  </script>
+
+{% endblock %}

@@ -40,9 +40,10 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('api/', include('api.urls')),  # Include your API app URLs
+    path('api/', include('api.urls')),  # Include your API app URLs
     path('task/', include('tasks.urls')),
     path('user/', include('users.urls')),
+    path('search/', include('search.urls')),
     path('notifications/', include('notifications.urls')),
     path('core/', include('core.urls')),
 

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'notifications.apps.NotificationsConfig',
     'core.apps.CoreConfig',
+    'search.apps.SearchConfig',
 
     'rest_framework',
     'drf_yasg',
