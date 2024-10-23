@@ -31,7 +31,7 @@ class Task(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)  # Task category
 
     class Meta:
-        ordering = ['due_date', 'priority', 'created_at']  # Default ordering of tasks
+        ordering = ['-created_at', 'due_date', 'priority', ]  # Default ordering of tasks
         verbose_name = 'Task'
         verbose_name_plural = 'Tasks'
 

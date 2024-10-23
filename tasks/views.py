@@ -103,31 +103,56 @@ class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'tasks/task_list.html'
     context_object_name = 'tasks'
-    paginate_by = 10  # Optional: Pagination
+    paginate_by = 10  # Pagination: 10 tasks per page
 
     def get_queryset(self):
-        # Get tasks for the logged-in user
+        # Get the current user
         queryset = Task.objects.filter(owner=self.request.user)
-        
-        # Get the category from the URL query parameter
-        category = self.request.GET.get('category')
 
+        # Get filter values from query params
+        category = self.request.GET.get('category')
+        priority = self.request.GET.get('priority')
+        deadline_order = self.request.GET.get('deadline_order')
+        is_completed = self.request.GET.get('is_completed')
+
+        # Filter by category if provided
         if category:
-            # Filter tasks by the selected category
             queryset = queryset.filter(category=category)
 
-        return queryset.order_by('-created_at', 'due_date', 'priority', )  # Apply ordering
+        # Filter by priority if provided
+        if priority:
+            queryset = queryset.filter(priority=priority)
+
+        # Filter by completion status if provided
+        if is_completed == 'completed':
+            queryset = queryset.filter(is_completed=True)
+        elif is_completed == 'not_completed':
+            queryset = queryset.filter(is_completed=False)
+
+        # Apply sorting by deadline if provided
+        if deadline_order == 'asc':
+            queryset = queryset.order_by('due_date')  # Soonest to Latest
+        elif deadline_order == 'desc':
+            queryset = queryset.order_by('-due_date')  # Latest to Soonest
+
+        # Default ordering: by creation date, due date, and priority
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Add the available categories to the context
+        # Add the available categories to the context for filtering
         context['categories'] = Task.CATEGORY_CHOICES
-
-        # Add the selected category (if any) to highlight in the template
-        context['selected_category'] = self.request.GET.get('category', '')
         
+        # Add selected filter values to the context to highlight them in the UI
+        context['selected_category'] = self.request.GET.get('category', '')
+        context['selected_priority'] = self.request.GET.get('priority', '')
+        context['selected_deadline_order'] = self.request.GET.get('deadline_order', '')
+        context['selected_is_completed'] = self.request.GET.get('is_completed', '')
+
         return context
+
+
 
 
 
