@@ -123,44 +123,51 @@
   <!-- Add the JavaScript for dynamic search -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.querySelector('#search-input');
-    const taskListContainer = document.querySelector('#task-list-container');
+        const searchInput = document.querySelector('#search-input');
+        const taskListContainer = document.querySelector('#task-list-container');
 
-    searchInput.addEventListener('input', function (event) {
-        const query = event.target.value;
-        const searchUrl = new URL('/search/', window.location.origin);
+        searchInput.addEventListener('input', function (event) {
+            const query = event.target.value;
+            const searchUrl = new URL('/search/', window.location.origin);
 
-        // Preserve existing query parameters (like filters)
-        const params = new URLSearchParams(window.location.search);
-        params.set('query', encodeURIComponent(query)); // Properly encode the query
-        searchUrl.search = params.toString();
+            // Preserve existing query parameters (like filters)
+            const params = new URLSearchParams(window.location.search);
+            params.set('query', encodeURIComponent(query)); // Properly encode the query
+            searchUrl.search = params.toString();
 
-        fetch(searchUrl, {
-            headers: { 'x-requested-with': 'XMLHttpRequest' } // Ensure it's recognized as an AJAX request
-        })
-        .then(response => response.json())
-        .then(data => {
-            taskListContainer.innerHTML = '';
+            fetch(searchUrl, {
+                headers: { 'x-requested-with': 'XMLHttpRequest' } // Ensure it's recognized as an AJAX request
+            })
+            .then(response => response.json())
+            .then(data => {
+                taskListContainer.innerHTML = ''; // Clear previous results
 
-            if (data.tasks.length > 0) {
-                data.tasks.forEach(task => {
-                    const taskHtml = `
-                        <div class="task-item">
-                            <h4>${task.title}</h4>
-                            <p>${task.description}</p>
-                            <p>Category: ${task.category}</p>
-                        </div>
-                    `;
-                    taskListContainer.innerHTML += taskHtml;
-                });
-            } else {
-                taskListContainer.innerHTML = '<p>No tasks found.</p>';
-            }
-        })
-        .catch(error => console.error('Error:', error));
+                if (data.tasks.length > 0) {
+                    data.tasks.forEach(task => {
+                        const taskHtml = `
+                            <a href="/task/${task.id}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+                                <div class="task-item">
+                                    <h4 class="font-bold text-lg mb-2">${task.title}</h4>
+                                    <p class="text-gray-700 mb-2">${task.description}</p>
+                                    <p class="text-sm mb-2"><strong>Priority:</strong> ${task.priority || 'Not specified'}</p>
+                                    <p class="text-sm mb-2"><strong>Due:</strong> ${task.due_date || 'No due date'}</p>
+                                    <p class="text-sm mb-2"><strong>Status:</strong> ${task.is_completed ? 'Completed' : 'Not Completed'}</p>
+                                    <p class="text-sm mb-2"><strong>Category:</strong> ${task.category || 'Uncategorized'}</p>
+                                    <p class="text-sm mb-2"><strong>owner:</strong> ${task.owner}</p>
+                                </div>
+                            </a>
+                        `;
+                        taskListContainer.innerHTML += taskHtml;
+                    });
+                } else {
+                    taskListContainer.innerHTML = '<p>No tasks found.</p>';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
     });
-});
-
 </script>
+
+
 
 {% endblock %}
