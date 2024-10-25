@@ -68,6 +68,7 @@
           {% if tasks %}
             <ul>
               {% for task in tasks %}
+              <a href="/task/{{ task.id }}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
                 <li class="mb-4 border-b pb-2">
                   <h4 class="text-lg font-bold">{{ task.title }}</h4>
                   <p>{{ task.description }}</p>
@@ -75,6 +76,7 @@
                   <p><strong>Due:</strong> {{ task.due_date }}</p>
                   <p><strong>Status:</strong> {% if task.is_completed %}Completed{% else %}Not Completed{% endif %}</p>
                 </li>
+              </a>
               {% endfor %}
             </ul>
           {% else %}
