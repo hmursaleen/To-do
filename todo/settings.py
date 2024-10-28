@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'core.apps.CoreConfig',
     'search.apps.SearchConfig',
+    'teams.apps.TeamsConfig',
 
     'rest_framework',
     'drf_yasg',

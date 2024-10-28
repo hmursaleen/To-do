@@ -46,6 +46,7 @@ urlpatterns = [
     path('search/', include('search.urls')),
     path('notifications/', include('notifications.urls')),
     path('core/', include('core.urls')),
+    path('team/', include('teams.urls', namespace='teams')),
 
     # drf-yasg routes for Swagger and ReDoc
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

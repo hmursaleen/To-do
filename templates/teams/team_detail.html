@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 bg-white p-8 shadow-md rounded-lg">
+        <h2 class="text-2xl font-semibold mb-6">{{ team.name }}</h2>
+        <p class="text-gray-600">Created on {{ team.created_at|date:"F j, Y" }} by {{ team.created_by.username }}</p>
+
+        <h3 class="text-xl font-semibold mt-6">Team Members</h3>
+        <ul class="mt-4">
+            {% for member in members %}
+                <li class="py-2 border-b border-gray-200">
+                    <strong>{{ member.user.username }}</strong> - {{ member.get_role_display }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Option to go back or manage team settings -->
+        <div class="mt-6">
+            <a href="#" class="text-blue-500 hover:underline">Back to Teams</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
