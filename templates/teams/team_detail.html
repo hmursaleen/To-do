@@ -3,6 +3,16 @@
 {% block content %}
 <div class="bg-gray-50 py-8">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 bg-white p-8 shadow-md rounded-lg">
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="{% if message.tags %}bg-green-100 text-green-700 border border-green-300 px-4 py-2 rounded{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <h2 class="text-2xl font-semibold mb-6">{{ team.name }}</h2>
         <p class="text-gray-600">Created on {{ team.created_at|date:"F j, Y" }} by {{ team.created_by.username }}</p>
 
@@ -15,10 +25,77 @@
             {% endfor %}
         </ul>
 
-        <!-- Option to go back or manage team settings -->
+        <!-- Search for adding new members -->
+        {% if is_admin %}
+        <div class="mt-8">
+            <h3 class="text-xl font-semibold">Add Members</h3>
+            <input type="text" id="user-search-input" placeholder="Search users by username" data-team-id="{{ team.id }}"
+                   class="border border-gray-300 rounded p-2 w-full mt-2" autocomplete="off">
+            <div id="search-results" class="mt-4"></div>
+        </div>
+        {% endif %}
+
+        <!-- Back button -->
         <div class="mt-6">
             <a href="#" class="text-blue-500 hover:underline">Back to Teams</a>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('user-search-input');
+    const searchResultsContainer = document.getElementById('search-results');
+    const teamId = searchInput.dataset.teamId;
+
+    searchInput.addEventListener('input', function () {
+        const query = searchInput.value;
+
+        if (query.length > 2) { // Start searching after 3 characters
+            fetch(`/team/${teamId}/search_user/?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                searchResultsContainer.innerHTML = '';
+                data.users.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.classList.add('search-result-item', 'p-2', 'border', 'border-gray-300', 'mb-2', 'flex', 'justify-between');
+                    userItem.innerHTML = `
+                        <span>${user.username}</span>
+                        <button class="add-user-btn text-blue-500 hover:underline" data-user-id="${user.id}">Add</button>
+                    `;
+                    searchResultsContainer.appendChild(userItem);
+                });
+
+                // Attach click events to add buttons
+                document.querySelectorAll('.add-user-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        addUserToTeam(button.dataset.userId);
+                        button.disabled = true; // Disable button after adding
+                    });
+                });
+            });
+        }
+    });
+
+    function addUserToTeam(userId) {
+        fetch(`/team/${teamId}/add_member/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF token is set
+            },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const message = document.createElement('div');
+                message.classList.add('bg-green-100', 'text-green-700', 'p-2', 'rounded', 'mb-2');
+                message.textContent = `${data.message}`;
+                searchResultsContainer.prepend(message);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
