@@ -45,7 +45,6 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
 
 
 
-
 class TeamDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Team
     template_name = 'teams/team_detail.html'
@@ -60,9 +59,11 @@ class TeamDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context = super().get_context_data(**kwargs)
         team = self.get_object()
         
-        # Add additional context for team members and roles
+        # Retrieve members and determine if the user is an admin
+        membership = Membership.objects.filter(user=self.request.user, team=team).first()
         context['members'] = Membership.objects.filter(team=team).select_related('user')
-        context['is_admin'] = team.is_admin(self.request.user)
+        context['is_admin'] = membership.is_admin() if membership else False
+        
         return context
 
 
