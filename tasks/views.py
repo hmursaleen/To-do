@@ -2,8 +2,15 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView
 from django.views.generic import ListView, UpdateView, DetailView, DeleteView
-from .models import Task
+from teams.models import Team, Membership
+from tasks.models import Task
 from .forms import TaskForm
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+
+
 
 
 
@@ -151,9 +158,6 @@ class TaskListView(LoginRequiredMixin, ListView):
         context['selected_is_completed'] = self.request.GET.get('is_completed', '')
 
         return context
-
-
-
 
 
 

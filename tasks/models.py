@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from teams.models import Team
+
+
 
 class Task(models.Model):
     """
@@ -29,6 +32,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default='M')  # Task priority
     is_completed = models.BooleanField(default=False)  # Completion status of the task
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)  # Task category
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='tasks', null=True)
 
     class Meta:
         ordering = ['-created_at', 'due_date', 'priority', ]  # Default ordering of tasks

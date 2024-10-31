@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Team Tasks{% endblock %}
+
+{% block content %}
+  <h2 class="text-2xl font-semibold mb-6">{{ team.name }} - Task List</h2>
+
+  <div class="container mx-auto">
+    <div class="flex">
+      <!-- Sidebar for Filters -->
+      <div class="w-1/4 bg-gray-100 p-4">
+        <h3 class="text-lg font-bold mb-4">Filters</h3>
+        <form method="get">
+          <div class="mb-4">
+            <label for="category" class="block font-medium">Category:</label>
+            <select name="category" id="category" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              {% for key, value in categories %}
+                <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="priority" class="block font-medium">Priority:</label>
+            <select name="priority" id="priority" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              <option value="H" {% if selected_priority == 'H' %}selected{% endif %}>High</option>
+              <option value="M" {% if selected_priority == 'M' %}selected{% endif %}>Medium</option>
+              <option value="L" {% if selected_priority == 'L' %}selected{% endif %}>Low</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="is_completed" class="block font-medium">Completion Status:</label>
+            <select name="is_completed" id="is_completed" class="w-full p-2 border rounded">
+              <option value="">All</option>
+              <option value="completed" {% if selected_is_completed == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="not_completed" {% if selected_is_completed == 'not_completed' %}selected{% endif %}>Not Completed</option>
+            </select>
+          </div>
+          <div class="mb-6">
+            <label for="deadline_order" class="block font-medium">Sort by Deadline:</label>
+            <select name="deadline_order" id="deadline_order" class="w-full p-2 border rounded">
+              <option value="asc" {% if selected_deadline_order == 'asc' %}selected{% endif %}>Soonest to Latest</option>
+              <option value="desc" {% if selected_deadline_order == 'desc' %}selected{% endif %}>Latest to Soonest</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded-md">Apply Filters</button>
+        </form>
+      </div>
+
+      <!-- Main Task List Content -->
+      <div class="w-3/4 p-4">
+        <form method="GET">
+          <input type="text" id="search-input" name="query" placeholder="Search tasks..." class="w-full p-2 border rounded mb-6">
+        </form>
+
+        <div id="task-list-container">
+          {% if tasks %}
+            <ul>
+              {% for task in tasks %}
+              <a href="/task/{{ task.id }}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+                <li class="mb-4 border-b pb-2">
+                  <h4 class="text-lg font-bold">{{ task.title }}</h4>
+                  <p>{{ task.description }}</p>
+                  <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
+                  <p><strong>Due:</strong> {{ task.due_date }}</p>
+                  <p><strong>Status:</strong> {% if task.is_completed %}Completed{% else %}Not Completed{% endif %}</p>
+                </li>
+              </a>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No tasks available for the selected filters.</p>
+          {% endif %}
+        </div>
+
+        {% if is_paginated %}
+          <div class="pagination">
+            <span class="step-links">
+              {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              {% endif %}
+
+              <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">&raquo; Last</a>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.querySelector('#search-input');
+        const taskListContainer = document.querySelector('#task-list-container');
+
+        searchInput.addEventListener('input', function (event) {
+            const query = event.target.value;
+            const searchUrl = new URL(window.location.href);
+            searchUrl.searchParams.set('query', query);
+
+            fetch(searchUrl, {
+                headers: { 'x-requested-with': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                taskListContainer.innerHTML = '';
+
+                if (data.tasks.length > 0) {
+                    data.tasks.forEach(task => {
+                        const taskHtml = `
+                            <a href="/task/${task.id}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+                                <div class="task-item">
+                                    <h4 class="text-lg font-bold">${task.title}</h4>
+                                    <p>${task.description}</p>
+                                    <p><strong>Priority:</strong> ${task.priority}</p>
+                                    <p><strong>Due:</strong> ${task.due_date || 'No due date'}</p>
+                                    <p><strong>Owner:</strong> ${task.owner}</p>
+                                </div>
+                            </a>
+                        `;
+                        taskListContainer.insertAdjacentHTML('beforeend', taskHtml);
+                    });
+                } else {
+                    taskListContainer.innerHTML = '<p>No tasks found matching the search criteria.</p>';
+                }
+            });
+        });
+    });
+  </script>
+{% endblock %}

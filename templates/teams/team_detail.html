@@ -16,6 +16,15 @@
         <h2 class="text-2xl font-semibold mb-6">{{ team.name }}</h2>
         <p class="text-gray-600">Created on {{ team.created_at|date:"F j, Y" }} by {{ team.created_by.username }}</p>
 
+        <!-- Create Task Button for Admin -->
+        {% if is_admin %}
+        <div class="mt-4 mb-6">
+            <a href="{% url 'teams:create-team-task' team.id %}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                Create Task
+            </a>
+        </div>
+        {% endif %}
+
         <h3 class="text-xl font-semibold mt-6">Team Members</h3>
         <ul class="mt-4">
             {% for member in members %}
@@ -43,6 +52,7 @@
 </div>
 
 <script>
+// Existing JavaScript functionality for user search, etc.
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('user-search-input');
     const searchResultsContainer = document.getElementById('search-results');

@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, ListView
 from django.contrib import messages
 from django.urls import reverse_lazy
 from .models import Team, Membership
@@ -11,6 +11,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponseForbidden
+from tasks.models import Task
+from tasks.forms import TaskForm
+from tasks.views import TaskCreateView
+from django.http import JsonResponse
+from tasks.views import TaskListView
+from search.views import SearchTask
 
 
 
@@ -115,3 +122,121 @@ class AddMemberView(APIView):
         Membership.objects.create(user=user, team=team, role=Membership.MEMBER)
 
         return Response({'success': True, 'message': f'{user.username} added as a member.'})
+
+
+
+
+
+
+
+
+class TeamTaskCreateView(TaskCreateView):
+    """
+    View to handle task creation for a specific team.
+    Only admins of the team can create tasks within it.
+    """
+    #success_url = reverse_lazy('teams:team_detail')  # Redirect to the team detail view after task creation
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the team instance and check if the user is an admin
+        self.team = get_object_or_404(Team, id=kwargs['team_id'])
+        membership = Membership.objects.filter(user=self.request.user, team=self.team).first()
+        if not membership.is_admin():
+            return HttpResponseForbidden("You are not authorized to create tasks for this team.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # Associate the task with the current team and the logged-in user
+        form.instance.team = self.team
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the team detail page after successful task creation
+        #return reverse_lazy('teams:team_detail', kwargs={'team_id': self.team.id})
+        return reverse_lazy('teams:team-task-list', kwargs={'team_id': self.team.id})
+
+    def get_context_data(self, **kwargs):
+        # Customize the context for the team-specific task creation
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Create Task for ' + self.team.name
+        context['header_text'] = f'Create Task in {self.team.name}'
+        context['button_text'] = 'Create Task'
+        return context
+
+
+
+
+
+
+
+
+
+class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
+    template_name = 'teams/team_task_list.html'
+    context_object_name = 'tasks'
+
+    def get_queryset(self):
+        user = self.request.user
+        team_id = self.kwargs['team_id']
+        team = Team.objects.get(id=team_id)
+
+        # Check user's role in the team
+        try:
+            membership = team.memberships.get(user=user)
+        except Membership.DoesNotExist:
+            return Task.objects.none()  # No tasks if user is not a member of the team
+
+        # Admins see all team tasks; members see only their assigned tasks
+        queryset = Task.objects.filter(team=team)
+        if membership.is_admin():
+            pass  # Admin sees all tasks
+        else:
+            queryset = queryset.filter(owner=user)  # Members see only their tasks
+
+        # Apply filters similar to TaskListView
+        category = self.request.GET.get('category')
+        priority = self.request.GET.get('priority')
+        deadline_order = self.request.GET.get('deadline_order')
+        is_completed = self.request.GET.get('is_completed')
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if priority:
+            queryset = queryset.filter(priority=priority)
+        if is_completed == 'completed':
+            queryset = queryset.filter(is_completed=True)
+        elif is_completed == 'not_completed':
+            queryset = queryset.filter(is_completed=False)
+
+        if deadline_order == 'asc':
+            queryset = queryset.order_by('due_date')
+        elif deadline_order == 'desc':
+            queryset = queryset.order_by('-due_date')
+
+        # Search logic from SearchTask view if a search query is provided
+        query = self.request.GET.get('query', '')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(category__icontains=query)
+            )
+
+        return queryset
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            tasks = self.get_queryset()
+            task_list = [{
+                'id': task.id,
+                'title': task.title,
+                'description': task.description,
+                'priority': task.priority,
+                'due_date': task.due_date.strftime('%Y-%m-%d') if task.due_date else None,
+                'category': task.category if task.category else 'Uncategorized',
+                'owner': task.owner.username,
+            } for task in tasks]
+            return JsonResponse({'tasks': task_list})
+
+        return super().render_to_response(context, **response_kwargs)
