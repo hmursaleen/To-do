@@ -23,6 +23,10 @@ from search.views import SearchTask
 
 
 
+
+
+
+
 class TeamCreateView(LoginRequiredMixin, CreateView):
     model = Team
     form_class = TeamForm
@@ -240,3 +244,56 @@ class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
             return JsonResponse({'tasks': task_list})
 
         return super().render_to_response(context, **response_kwargs)
+
+
+
+
+
+
+'''
+from .models import Task, Membership, User
+from teams.permissions import IsTeamAdmin  # Custom permission for admin-only actions
+from tasks.serializers import TaskSerializer
+
+
+class TeamTaskDetailView(DetailView):
+    model = Task
+    template_name = "teams/team_task_detail.html"
+    context_object_name = "task"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        task = self.get_object()
+        team = self.request.team  # Assuming the team is fetched as part of request
+
+        # Get users already assigned to the task
+        assigned_users = task.assigned_users.all()
+        context['assigned_users'] = assigned_users
+
+        # Check if the user is an admin to conditionally render the search
+        context['is_admin'] = Membership.objects.filter(
+            team=team, user=self.request.user, role=Membership.ADMIN
+        ).exists()
+
+        return context
+
+# Dynamic search for team members to assign to the task
+class AssignableUserSearchView(APIView):
+    permission_classes = [IsAuthenticated, IsTeamAdmin]  # Ensure only admins access
+
+    def get(self, request, team_id, task_id):
+        query = request.GET.get('query', '')
+        team = get_object_or_404(Team, id=team_id)
+        task = get_object_or_404(Task, id=task_id)
+
+        # Members of the team not yet assigned to the task and matching the query
+        unassigned_users = User.objects.filter(
+            Q(username__icontains=query),
+            Q(is_active=True),
+            Q(membership__team=team),
+        ).exclude(id__in=task.assigned_users.values_list('id', flat=True))
+
+        # Serialize user data for JSON response
+        user_data = [{'id': user.id, 'username': user.username} for user in unassigned_users]
+        return Response({'users': user_data})
+'''

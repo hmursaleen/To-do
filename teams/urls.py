@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:team_id>/add_member/', AddMemberView.as_view(), name='add_member'),
     path('<int:team_id>/create-task/', TeamTaskCreateView.as_view(), name='create-team-task'),
     path('<int:team_id>/task-list/', TeamTaskListView.as_view(), name='team-task-list'),
+    #path('<int:team_id>/task/<int:pk>/', TeamTaskDetailView.as_view(), name='team-task-detail'),
 ]
