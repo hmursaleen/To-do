@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-8 bg-white shadow-md rounded-lg">
+    <!-- Task Details Section -->
+    <h1 class="text-2xl font-semibold mb-4">{{ task.title }}</h1>
+    
+    <div class="mb-6">
+        <p><strong>Description:</strong> {{ task.description }}</p>
+        <p><strong>Due Date:</strong> {{ task.due_date }}</p>
+        <p><strong>Status:</strong> {{ task.get_status_display }}</p>
+        <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
+        <p><strong>Created At:</strong> {{ task.created_at }}</p>
+        <p><strong>Last Updated:</strong> {{ task.updated_at }}</p>
+    </div>
+
+    <!-- Assigned Users Section -->
+    <h2 class="text-xl font-semibold mb-2">Assigned Users</h2>
+    <ul id="assigned-users" class="list-disc list-inside mb-4">
+        {% for user in assigned_users %}
+            <li>{{ user.username }}</li>
+        {% empty %}
+            <li class="text-gray-500">No users assigned to this task.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Admin-only User Search for Assigning Task -->
+    {% if is_admin %}
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Assign Users</h3>
+            <input
+                type="text"
+                id="user-search-input"
+                placeholder="Search team members..."
+                class="w-full p-2 border rounded-md mb-2"
+            />
+            <ul id="user-search-results" class="list-disc list-inside">
+                <!-- Search results will be populated dynamically -->
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for Dynamic User Search and Assignment -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("user-search-input");
+        const searchResultsContainer = document.getElementById("user-search-results");
+        const assignedUsersList = document.getElementById("assigned-users");
+
+        function renderUserResult(user) {
+            const li = document.createElement("li");
+            li.textContent = user.username;
+            
+            const assignButton = document.createElement("button");
+            assignButton.textContent = "Assign";
+            assignButton.classList.add("ml-2", "text-blue-500", "hover:underline");
+            assignButton.addEventListener("click", function () {
+                assignUserToTask(user.id, user.username);
+            });
+
+            li.appendChild(assignButton);
+            return li;
+        }
+
+        function updateAssignedUsers(username) {
+            const li = document.createElement("li");
+            li.textContent = username;
+            assignedUsersList.appendChild(li);
+        }
+
+        async function fetchAssignableUsers(query) {
+            const response = await fetch(`/teams/{{ task.team.id }}/tasks/{{ task.id }}/assignable_users/?query=${query}`);
+            const data = await response.json();
+            return data.users;
+        }
+
+        function assignUserToTask(userId, username) {
+            fetch(`/tasks/{{ task.id }}/assign_user/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({ user_id: userId }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    updateAssignedUsers(username);
+                }
+            });
+        }
+
+        searchInput.addEventListener("input", async function () {
+            const query = this.value.trim();
+            if (query.length > 1) {
+                const users = await fetchAssignableUsers(query);
+                searchResultsContainer.innerHTML = "";
+                users.forEach(user => {
+                    const userItem = renderUserResult(user);
+                    searchResultsContainer.appendChild(userItem);
+                });
+            } else {
+                searchResultsContainer.innerHTML = "";
+            }
+        });
+    });
+</script>
+{% endblock %}

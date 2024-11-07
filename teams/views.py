@@ -18,6 +18,7 @@ from tasks.views import TaskCreateView
 from django.http import JsonResponse
 from tasks.views import TaskListView
 from search.views import SearchTask
+from api.serializers import TaskSerializer
 
 
 
@@ -245,17 +246,23 @@ class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
 
         return super().render_to_response(context, **response_kwargs)
 
+    
+    def get_context_data(self, **kwargs):
+        # Customize the context for the team-specific task creation
+        context = super().get_context_data(**kwargs)
+        team_id = self.kwargs['team_id']
+        team = Team.objects.get(id=team_id)
+        context['team'] = team
+        return context
+
+
+
 
 
 
 
 
 '''
-from .models import Task, Membership, User
-from teams.permissions import IsTeamAdmin  # Custom permission for admin-only actions
-from tasks.serializers import TaskSerializer
-
-
 class TeamTaskDetailView(DetailView):
     model = Task
     template_name = "teams/team_task_detail.html"
@@ -264,22 +271,23 @@ class TeamTaskDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         task = self.get_object()
-        team = self.request.team  # Assuming the team is fetched as part of request
+        team_id = self.kwargs['team_id']
+        team = Team.objects.get(id=team_id)
+        context['team'] = team # Assuming the team is fetched as part of request
 
         # Get users already assigned to the task
         assigned_users = task.assigned_users.all()
         context['assigned_users'] = assigned_users
 
         # Check if the user is an admin to conditionally render the search
-        context['is_admin'] = Membership.objects.filter(
-            team=team, user=self.request.user, role=Membership.ADMIN
-        ).exists()
+        membership = Membership.objects.filter(user=self.request.user, team=team).first()
+        context['is_admin'] = membership.is_admin() if membership else False
 
         return context
 
 # Dynamic search for team members to assign to the task
 class AssignableUserSearchView(APIView):
-    permission_classes = [IsAuthenticated, IsTeamAdmin]  # Ensure only admins access
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, team_id, task_id):
         query = request.GET.get('query', '')

@@ -58,7 +58,7 @@
           {% if tasks %}
             <ul>
               {% for task in tasks %}
-              <a href="/task/{{ task.id }}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+              <a href="/team/{{ team.id }}/task/{{ task.id }}/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
                 <li class="mb-4 border-b pb-2">
                   <h4 class="text-lg font-bold">{{ task.title }}</h4>
                   <p>{{ task.description }}</p>
@@ -117,7 +117,7 @@
                 if (data.tasks.length > 0) {
                     data.tasks.forEach(task => {
                         const taskHtml = `
-                            <a href="/task/${task.id}/detail/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+                            <a href="/team/${team.id}/task/${task.id}/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
                                 <div class="task-item">
                                     <h4 class="text-lg font-bold">${task.title}</h4>
                                     <p>${task.description}</p>
