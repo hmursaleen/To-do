@@ -153,8 +153,9 @@ class TeamTaskCreateView(TaskCreateView):
     def form_valid(self, form):
         # Associate the task with the current team and the logged-in user
         form.instance.team = self.team
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        form.instance.owner.add(self.request.user)
+        return response
 
     def get_success_url(self):
         # Redirect to the team detail page after successful task creation
@@ -240,7 +241,7 @@ class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
                 'priority': task.priority,
                 'due_date': task.due_date.strftime('%Y-%m-%d') if task.due_date else None,
                 'category': task.category if task.category else 'Uncategorized',
-                'owner': task.owner.username,
+                'owners': [owner.username for owner in task.owner.all()],
             } for task in tasks]
             return JsonResponse({'tasks': task_list})
 

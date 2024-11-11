@@ -25,7 +25,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=255)  # Title of the task
     description = models.TextField(blank=True, help_text="Optional description of the task")  # Detailed task description
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")  # Task owner (user)
+    owner = models.ManyToManyField(User, related_name="tasks")  # Task owner (user)
     created_at = models.DateTimeField(auto_now_add=True)  # Time the task was created
     updated_at = models.DateTimeField(auto_now=True)  # Time the task was last updated
     due_date = models.DateTimeField(null=True, blank=True)  # Optional due date for the task
@@ -35,9 +35,28 @@ class Task(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='tasks', null=True)
 
     class Meta:
-        ordering = ['-created_at', 'due_date', 'priority', ]  # Default ordering of tasks
+        ordering = ['-created_at', 'due_date', 'priority', ]
         verbose_name = 'Task'
         verbose_name_plural = 'Tasks'
 
     def __str__(self):
         return self.title
+
+
+
+
+
+
+
+'''
+class TaskAssignment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="task_assignments")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="assignees")
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'task')  # Ensures a user is only assigned to a task once
+
+    def __str__(self):
+        return f"{self.user.username} assigned to {self.task.title}"
+'''
