@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from tasks.models import Task
 
 User = get_user_model()
 
 class Team(models.Model):
-    # Fields
     name = models.CharField(max_length=100, unique=True, verbose_name="Team Name")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     created_by = models.ForeignKey(
@@ -23,6 +23,24 @@ class Team(models.Model):
     # String Representation
     def __str__(self):
         return self.name
+
+
+
+
+
+
+
+class TeamTask(Task):
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name='team_tasks',
+        verbose_name='Team'
+    )
+
+    class Meta:
+        verbose_name = "Team Task"
+        verbose_name_plural = "Team Tasks"
 
 
 

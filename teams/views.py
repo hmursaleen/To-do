@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import CreateView, DetailView, ListView
 from django.contrib import messages
-from django.urls import reverse_lazy
-from .models import Team, Membership
-from .forms import TeamForm
-from django.shortcuts import get_object_or_404
+from django.urls import reverse, reverse_lazy
+from .models import Team, TeamTask, Membership
+from .forms import TeamForm, TeamTaskForm
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status
@@ -13,15 +12,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponseForbidden
 from tasks.models import Task
-from tasks.forms import TaskForm
-from tasks.views import TaskCreateView
 from django.http import JsonResponse
 from tasks.views import TaskListView
 from search.views import SearchTask
 from api.serializers import TaskSerializer
-
-
-
+from django.shortcuts import get_object_or_404, redirect
 
 
 
@@ -135,40 +130,48 @@ class AddMemberView(APIView):
 
 
 
-class TeamTaskCreateView(TaskCreateView):
+
+class TeamTaskCreateView(LoginRequiredMixin, CreateView):
     """
-    View to handle task creation for a specific team.
-    Only admins of the team can create tasks within it.
+    View for creating a task within a specific team.
+    Only team admins are allowed to create tasks for the team.
     """
-    #success_url = reverse_lazy('teams:team_detail')  # Redirect to the team detail view after task creation
+    model = TeamTask
+    form_class = TeamTaskForm
+    template_name = 'tasks/task_form.html'
 
     def dispatch(self, request, *args, **kwargs):
-        # Get the team instance and check if the user is an admin
+        # Get the team instance
         self.team = get_object_or_404(Team, id=kwargs['team_id'])
+
+        # Check if the user is a team admin
         membership = Membership.objects.filter(user=self.request.user, team=self.team).first()
-        if not membership.is_admin():
+        if not membership or not membership.is_admin():
             return HttpResponseForbidden("You are not authorized to create tasks for this team.")
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # Associate the task with the current team and the logged-in user
+        # Set the team field to associate the task with the correct team
         form.instance.team = self.team
+
+        # Save the form and add the user as the task owner
         response = super().form_valid(form)
-        form.instance.owner.add(self.request.user)
+        form.instance.owner.add(self.request.user)  # Many-to-many field for task owners
         return response
 
     def get_success_url(self):
-        # Redirect to the team detail page after successful task creation
-        #return reverse_lazy('teams:team_detail', kwargs={'team_id': self.team.id})
+        # Redirect to the team detail page after task creation
         return reverse_lazy('teams:team-task-list', kwargs={'team_id': self.team.id})
 
     def get_context_data(self, **kwargs):
-        # Customize the context for the team-specific task creation
+        # Pass additional context for template rendering
         context = super().get_context_data(**kwargs)
-        context['form_title'] = 'Create Task for ' + self.team.name
-        context['header_text'] = f'Create Task in {self.team.name}'
-        context['button_text'] = 'Create Task'
+        context['form_title'] = "Create Team Task"
+        context['header_text'] = f"Create Task for {self.team.name}"
+        context['button_text'] = "Create Task"
         return context
+
 
 
 
@@ -191,10 +194,10 @@ class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
         try:
             membership = team.memberships.get(user=user)
         except Membership.DoesNotExist:
-            return Task.objects.none()  # No tasks if user is not a member of the team
+            return TeamTask.objects.none()  # No tasks if user is not a member of the team
 
         # Admins see all team tasks; members see only their assigned tasks
-        queryset = Task.objects.filter(team=team)
+        queryset = TeamTask.objects.filter(team=team)
         if membership.is_admin():
             pass  # Admin sees all tasks
         else:
@@ -263,9 +266,9 @@ class TeamTaskListView(TaskListView, SearchTask, LoginRequiredMixin):
 
 
 
-'''
+
 class TeamTaskDetailView(DetailView):
-    model = Task
+    model = TeamTask
     template_name = "teams/team_task_detail.html"
     context_object_name = "task"
 
@@ -277,7 +280,7 @@ class TeamTaskDetailView(DetailView):
         context['team'] = team # Assuming the team is fetched as part of request
 
         # Get users already assigned to the task
-        assigned_users = task.assigned_users.all()
+        assigned_users = task.owner.all()
         context['assigned_users'] = assigned_users
 
         # Check if the user is an admin to conditionally render the search
@@ -290,19 +293,18 @@ class TeamTaskDetailView(DetailView):
 class AssignableUserSearchView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, team_id, task_id):
+    def get(self, request, team_id, pk):
         query = request.GET.get('query', '')
         team = get_object_or_404(Team, id=team_id)
-        task = get_object_or_404(Task, id=task_id)
+        task = get_object_or_404(Task, id=pk)
 
         # Members of the team not yet assigned to the task and matching the query
         unassigned_users = User.objects.filter(
             Q(username__icontains=query),
             Q(is_active=True),
-            Q(membership__team=team),
-        ).exclude(id__in=task.assigned_users.values_list('id', flat=True))
+            Q(team_memberships__team=team),
+        ).exclude(id__in=task.owner.values_list('id', flat=True))
 
         # Serialize user data for JSON response
         user_data = [{'id': user.id, 'username': user.username} for user in unassigned_users]
         return Response({'users': user_data})
-'''

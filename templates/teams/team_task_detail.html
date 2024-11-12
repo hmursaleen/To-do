@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "core/base.html" %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto p-8 bg-white shadow-md rounded-lg">
@@ -70,13 +70,13 @@
         }
 
         async function fetchAssignableUsers(query) {
-            const response = await fetch(`/teams/{{ task.team.id }}/tasks/{{ task.id }}/assignable_users/?query=${query}`);
+            const response = await fetch(`/team/{{ team.id }}/task/{{ task.id }}/assignable_users/?query=${query}`);
             const data = await response.json();
             return data.users;
         }
 
         function assignUserToTask(userId, username) {
-            fetch(`/tasks/{{ task.id }}/assign_user/`, {
+            fetch(`/task/{{ task.id }}/assign_user/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
