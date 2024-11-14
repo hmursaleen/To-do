@@ -308,3 +308,33 @@ class AssignableUserSearchView(APIView):
         # Serialize user data for JSON response
         user_data = [{'id': user.id, 'username': user.username} for user in unassigned_users]
         return Response({'users': user_data})
+
+
+
+
+
+
+
+
+
+class AssignUserToTaskView(APIView):
+    """
+    API View to assign a team member to a specific task.
+    Only team admins can assign members to tasks.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, team_id, pk):
+        team = get_object_or_404(Team, id=team_id)
+        task = get_object_or_404(TeamTask, id=pk)
+        team = task.team
+
+        # Retrieve the user_id from the POST data
+        user_id = request.data.get('user_id')
+        user = get_object_or_404(User, id=user_id)
+        
+        # Assign the user to the task
+        task.owner.add(user)
+        task.save()
+
+        return Response({"detail": f"User {user.username} has been assigned to the task."}, status=status.HTTP_200_OK)

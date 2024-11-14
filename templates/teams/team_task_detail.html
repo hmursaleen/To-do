@@ -76,7 +76,7 @@
         }
 
         function assignUserToTask(userId, username) {
-            fetch(`/task/{{ task.id }}/assign_user/`, {
+            fetch(`/team/{{ team.id }}/task/{{ task.id }}/assign_user/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -87,6 +87,11 @@
             .then(response => {
                 if (response.ok) {
                     updateAssignedUsers(username);
+                }  
+                else {
+                    response.json().then(data => {
+                        alert(data.detail);  // Display error message if any
+                    });
                 }
             });
         }
