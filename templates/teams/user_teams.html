@@ -1,0 +1,28 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 bg-white p-8 shadow-md rounded-lg">
+        <h1 class="text-2xl font-bold mb-4">My Teams</h1>
+        {% if teams %}
+            <ul class="divide-y divide-gray-200">
+                {% for team in teams %}
+                
+                <a href="/team/{{ team.id }}/task-list/" class="block p-4 mb-4 border border-gray-300 rounded hover:bg-gray-50 transition">
+                    <li class="py-4">
+                        <div class="flex justify-between items-center">
+                            <div class="text-lg font-medium">
+                                {{ team.name }}
+                            </div>
+                        </div>
+                    </li>
+                </a>
+
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You are not a member of any teams.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

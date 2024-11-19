@@ -12,4 +12,5 @@ urlpatterns = [
     path('<int:team_id>/task/<int:pk>/', views.TeamTaskDetailView.as_view(), name='team-task-detail'),
     path('<int:team_id>/task/<int:pk>/assignable_users/', views.AssignableUserSearchView.as_view(), name='assignable-user-search'),
     path('<int:team_id>/task/<int:pk>/assign_user/', views.AssignUserToTaskView.as_view(), name='assign-user-to-task'),
+    path('my-teams/', views.UserTeamsView.as_view(), name='user-teams'),
 ]

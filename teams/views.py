@@ -289,6 +289,12 @@ class TeamTaskDetailView(DetailView):
 
         return context
 
+
+
+
+
+
+
 # Dynamic search for team members to assign to the task
 class AssignableUserSearchView(APIView):
     permission_classes = [IsAuthenticated]
@@ -338,3 +344,18 @@ class AssignUserToTaskView(APIView):
         task.save()
 
         return Response({"detail": f"User {user.username} has been assigned to the task."}, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+class UserTeamsView(LoginRequiredMixin, ListView):
+    model = Team
+    template_name = 'teams/user_teams.html'
+    context_object_name = 'teams'
+
+    def get_queryset(self):
+        # Get the teams where the current user is a member
+        return Team.objects.filter(memberships__user=self.request.user)
