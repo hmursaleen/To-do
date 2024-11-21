@@ -3,8 +3,9 @@ from django.views.generic import CreateView, DetailView, ListView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from .models import Team, TeamTask, Membership
+from notification.models import Notification
 from .forms import TeamForm, TeamTaskForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.views import APIView
@@ -17,6 +18,13 @@ from tasks.views import TaskListView
 from search.views import SearchTask
 from api.serializers import TaskSerializer
 from django.shortcuts import get_object_or_404, redirect
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+
+
+
+
 
 
 
@@ -80,7 +88,6 @@ class TeamDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 
-User = get_user_model()
 
 class UserSearchView(APIView):
     permission_classes = [IsAuthenticated]
@@ -111,19 +118,40 @@ class AddMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, team_id):
-        team = Team.objects.get(id=team_id)
+        team = get_object_or_404(Team, id=team_id)
+
         # Check if the current user is an admin
         if not Membership.objects.filter(user=request.user, team=team, role=Membership.ADMIN).exists():
             return Response({'error': 'Only admins can add members'}, status=status.HTTP_403_FORBIDDEN)
 
         user_id = request.data.get('user_id')
-        user = User.objects.get(id=user_id)
+        user = get_object_or_404(User, id=user_id)
+
         # Add the user to the team
         Membership.objects.create(user=user, team=team, role=Membership.MEMBER)
+
+        # Create a notification entry in the database
+        message = f"You have been added to the team '{team.name}' by {request.user.username}."
+        Notification.objects.create(user=user, message=message)
+
+        # Broadcast the notification to Redis
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'user_{user.id}',  # The Redis channel for this user
+            {
+                'type': 'send_notification',
+                'message': message,
+            }
+        )
 
         return Response({'success': True, 'message': f'{user.username} added as a member.'})
 
 
+'''
+get_channel_layer(): Retrieves the channel layer instance.
+async_to_sync: Converts the asynchronous group_send call to a synchronous function so it can be used in Django views.
+group_send: Sends a message to a Redis group (dedicated to the user's channel).
+'''
 
 
 

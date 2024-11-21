@@ -94,6 +94,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+#CHANNEL_LAYERS: Configures the channel layer with Redis as the backend.
 
 
 REST_FRAMEWORK = {
@@ -167,6 +168,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'todo.wsgi.application'
 
 ASGI_APPLICATION = 'todo.asgi.application'
+
+#ASGI_APPLICATION: This setting points to the asgi.py file where the Channels setup resides
+
+#ASGI_APPLICATION = 'todo.routing.application'
 
 
 
