@@ -11,12 +11,6 @@ from django.shortcuts import get_object_or_404
 
 
 
-
-
-
-
-
-
 '''
 Mixins:
 
@@ -37,7 +31,7 @@ This method is used to pass extra context (like the page title) to the template,
 '''
 
 
-class TaskCreateView(LoginRequiredMixin, CreateView): #
+class TaskCreateView(LoginRequiredMixin, CreateView):
     """
     View to handle task creation. Requires login and uses TaskForm.
     """
