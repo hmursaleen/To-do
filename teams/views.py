@@ -3,7 +3,7 @@ from django.views.generic import CreateView, DetailView, ListView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from .models import Team, TeamTask, Membership
-from notification.models import Notification
+from notifications.models import Notification
 from .forms import TeamForm, TeamTaskForm
 from django.contrib.auth.models import User
 from django.db.models import Q

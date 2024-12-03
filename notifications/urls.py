@@ -1,4 +1,10 @@
-# notifications/urls.py
+from django.urls import path
+from . import views
 
-# This file can be left empty for now since you're using WebSockets and not traditional HTTP views.
-urlpatterns = []
+app_name = "notifications"
+
+urlpatterns = [
+    path('<int:notification_id>/mark_as_read/', views.MarkNotificationAsReadView.as_view(), name='mark-as-read'),
+    path('all/', views.NotificationListView.as_view(), name="notification_list"),
+
+]

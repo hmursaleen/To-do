@@ -21,3 +21,16 @@ class TaskSerializer(serializers.ModelSerializer):
             'updated_at', 'due_date', 'priority', 'is_completed'
         ]
         read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
+
+
+
+
+
+
+from notifications.models import Notification
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'is_read', 'created_at']  # Adjust fields as needed
+        read_only_fields = ['id', 'message', 'created_at']  # Ensure these fields are read-only

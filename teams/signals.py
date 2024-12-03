@@ -8,7 +8,7 @@ Real-Time Notification: A placeholder call to send_realtime_notification is used
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Membership
-from notification.models import Notification
+from notifications.models import Notification
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

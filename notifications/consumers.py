@@ -77,6 +77,18 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+    
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        notification_id = data.get("notification_id")
+        
+        # Mark notification as read
+        if notification_id:
+            notification = await database_sync_to_async(Notification.objects.filter(pk=notification_id).first)()
+            if notification and notification.recipient == self.user:
+                notification.is_read = True
+                await database_sync_to_async(notification.save)()
+
     async def send_notification(self, event):
         # Receive notification message from the channel layer
         message = event['message']

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6">
+    <h1 class="text-xl font-bold mb-4">Your Notifications</h1>
+
+    <!-- Filter for unread notifications -->
+    <form method="get" class="mb-4">
+        <label for="unread" class="inline-flex items-center">
+            <input
+                type="checkbox"
+                id="unread"
+                name="unread"
+                value="true"
+                class="mr-2"
+                {% if request.GET.unread == "true" %}checked{% endif %}
+            >
+            Show unread only
+        </label>
+        <button type="submit" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Apply
+        </button>
+    </form>
+
+    <!-- Notification list -->
+    <ul class="divide-y divide-gray-200">
+        {% for notification in notifications %}
+            <li class="py-4 flex justify-between items-center {% if notification.is_read %}text-gray-400{% else %}text-black{% endif %}">
+                <span>{{ notification.message }}</span>
+                <span class="text-sm">{{ notification.created_at|date:"M d, Y H:i" }}</span>
+            </li>
+        {% empty %}
+            <li class="py-4 text-center text-gray-500">No notifications found.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Pagination controls -->
+    <div class="mt-4">
+        <div class="flex justify-between">
+            {% if notifications.has_previous %}
+                <a href="?{% if request.GET.unread == "true" %}unread=true&{% endif %}page={{ notifications.previous_page_number }}" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                    Previous
+                </a>
+            {% else %}
+                <span class="px-4 py-2 bg-gray-200 rounded">Previous</span>
+            {% endif %}
+
+            {% if notifications.has_next %}
+                <a href="?{% if request.GET.unread == "true" %}unread=true&{% endif %}page={{ notifications.next_page_number }}" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                    Next
+                </a>
+            {% else %}
+                <span class="px-4 py-2 bg-gray-200 rounded">Next</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

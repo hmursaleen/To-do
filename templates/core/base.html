@@ -25,6 +25,29 @@
                 {% if user.is_authenticated %}
                     <li><a href="#" class="text-white hover:text-blue-200">My Tasks</a></li>
                     <li><a href="{% url 'teams:user-teams' %}" class="text-white hover:text-blue-200">My Teams</a></li>
+
+
+                    <!-- Notification Dropdown -->
+                    <li class="relative">
+                        <button id="notification-icon" class="text-white relative">
+                            🔔 Notification
+                            <span id="notification-counter" class="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 text-xs hidden"></span>
+                        </button>
+                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 bg-white border rounded-lg shadow-lg w-72">
+                            <div class="p-4 border-b">
+                                <h4 class="text-gray-700 font-semibold">Notifications</h4>
+                            </div>
+                            <ul id="notification-list" class="max-h-64 overflow-y-auto">
+                                <li class="text-gray-500 text-center p-4">No new notifications</li>
+                            </ul>
+                            <div class="p-4 text-center border-t">
+                                <a href="{% url 'notifications:notification_list' %}" class="text-blue-500 text-sm hover:underline">View all notifications</a>
+                            </div>
+                        </div>
+                    </li>
+
+
+
                     <li><a href="{% url 'users:logout' %}" class="text-red-500 hover:underline">Logout</a>
                     </li>
                 {% else %}
@@ -49,56 +72,104 @@
         <div id="notification-container" class="notification-container"></div>
 
         <script>
-            const userId = "{{ request.user.id }}";  // Ensure user ID is dynamically passed
-            if (userId) {
-                // Create WebSocket URL (handles both ws:// and wss://)
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-                const wsUrl = `${wsProtocol}${window.location.host}/ws/notifications/deadlines/`;
-                
-                // Create WebSocket connection
-                const notificationSocket = new WebSocket(wsUrl);
+            document.addEventListener('DOMContentLoaded', () => {
+                const userId = "{{ request.user.id }}";  // Ensure user ID is dynamically passed
+                if (!userId) return;
         
-                // WebSocket connection opened
-                notificationSocket.onopen = function(event) {
-                    console.log('WebSocket connection established.');
+                // Notification UI Elements
+                const notificationIcon = document.getElementById('notification-icon');
+                const notificationCounter = document.getElementById('notification-counter');
+                const notificationDropdown = document.getElementById('notification-dropdown');
+                const notificationList = document.getElementById('notification-list');
+        
+                let unreadCount = 0;
+        
+                // Helper function: Add notification to dropdown
+                const addNotificationToDropdown = (message, notificationId = null) => {
+                    const li = document.createElement('li');
+                    li.textContent = message;
+                    li.classList.add('p-2', 'border-b', 'hover:bg-gray-100', 'cursor-pointer');
+        
+                    // Mark notification as read on click if notificationId is available
+                    if (notificationId) {
+                        li.addEventListener('click', () => {
+                            markAsRead(notificationId);
+                            li.classList.add('line-through', 'text-gray-400');
+                            unreadCount = Math.max(0, unreadCount - 1);
+                            notificationCounter.textContent = unreadCount;
+                        });
+                    }
+        
+                    notificationList.appendChild(li);
                 };
         
-                // WebSocket message received
-                notificationSocket.onmessage = function(event) {
+                // WebSocket setup
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const wsUrl = `${wsProtocol}${window.location.host}/ws/notifications/deadlines/`; // Adjust WebSocket URL if needed
+                const notificationSocket = new WebSocket(wsUrl);
+        
+                notificationSocket.onopen = () => {
+                    console.log("WebSocket connection established.");
+                };
+        
+                notificationSocket.onmessage = (event) => {
                     try {
-                        // Parse the received data
                         const data = JSON.parse(event.data);
-                        
-                        // Check if 'notification' exists in the data
-                        if (data.notification) {
-                            // Display the notification message in a window alert
-                            alert(`Notification: ${data.notification}`);
-                        } else {
-                            console.error('Invalid notification format:', data);
+        
+                        // Handle deadline notifications
+                        if (data.notification && data.type === 'deadline') {
+                            alert(`Task Deadline Notification: ${data.notification}`);
+                        }
+        
+                        // Handle general notifications
+                        if (data.message && data.type === 'general') {
+                            unreadCount += 1;
+                            notificationCounter.textContent = unreadCount;
+                            addNotificationToDropdown(data.message, data.notification_id);
                         }
                     } catch (error) {
                         console.error('Error parsing WebSocket message:', error);
                     }
                 };
         
-                // WebSocket error handling
-                notificationSocket.onerror = function(error) {
-                    console.error('WebSocket error:', error);
+                notificationSocket.onerror = (error) => {
+                    console.error("WebSocket error:", error);
                 };
         
-                // WebSocket connection closed
-                notificationSocket.onclose = function(event) {
+                notificationSocket.onclose = (event) => {
                     if (event.wasClean) {
-                        console.log('WebSocket connection closed cleanly.');
+                        console.log("WebSocket connection closed cleanly.");
                     } else {
-                        console.error('WebSocket connection closed unexpectedly.');
+                        console.error("WebSocket connection closed unexpectedly.");
                     }
                 };
         
-                // Optional: Logic to auto-reconnect if the WebSocket connection is lost
-                // This can be added later if needed.
-            }
+                // Toggle notification dropdown visibility
+                if (notificationIcon) {
+                    notificationIcon.addEventListener('click', () => {
+                        notificationDropdown.classList.toggle('hidden');
+                    });
+                }
+        
+                // Mark notification as read (backend interaction)
+                async function markAsRead(notificationId) {
+                    if (!notificationId) return;
+        
+                    try {
+                        await fetch(`/notifications/${notificationId}/mark_as_read/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': "{{ csrf_token }}",
+                            },
+                        });
+                    } catch (error) {
+                        console.error("Error marking notification as read:", error);
+                    }
+                }
+            });
         </script>
+        
         
     </main>
 
