@@ -197,7 +197,7 @@ DATABASES = {
         'PASSWORD': 'admin',  # Your user's password
         'HOST': 'localhost',  # Default host
         'PORT': '5432',  # Default port
-    } #
+    }
 }
 
 
